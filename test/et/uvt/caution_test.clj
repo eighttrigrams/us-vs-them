@@ -51,11 +51,9 @@ delta
     ;; island's value falls to the share of it that is still ours.
     ;;
     ;; Falls to `0.9`, not to three-quarters, because that share is weighted: a
-    ;; line of ours counts for three of theirs. Their one line among our three
-    ;; barely moves it. Mirror the case and the weight tells: our one line among
-    ;; their three lifts that island to `0.5`, contested, rather than leaving it
-    ;; near enough theirs to edit freely — which is the whole point, since a line
-    ;; we wrote by hand must not be made cheap by its neighbours.
+    ;; line of ours counts for three of theirs, so their one line among our three
+    ;; barely moves it. What the weight is *for* is the mirror of this case, which
+    ;; is the test below.
     ;;
     ;; This is also the first thing that puts a line strictly between the two ends
     ;; of the scale, which is what the scale was for.
@@ -81,5 +79,46 @@ h2
 x
 h3
 a3
+")
+            {:ours #{:human}})))))
+
+(deftest mirrored-contamination-test
+  (testing "our line landing inside their island is not made cheap by its neighbours"
+    ;; The case above, turned around: our text, the agent replaces the middle of
+    ;; it with three lines of its own, and then we put one line down inside that.
+    ;;
+    ;; Everything about the mechanism is symmetric — `settle` never so much as
+    ;; looks at a source — so without the weight this island would come out at
+    ;; `0.25`, the exact mirror of `0.75`. That number would say an agent may
+    ;; fairly freely change a line we had *just written by hand*, on the strength
+    ;; of nothing but what surrounds it. Which is the founding principle inverted.
+    ;;
+    ;; The weight is the one place that asymmetry lives, and it is why this reads
+    ;; `0.5`: contested ground, be careful, rather than theirs to do with as they
+    ;; like. Note it is still a dilution and not a floor — the agent's three lines
+    ;; are held at `0.5` too, because the island is one thing and carries one
+    ;; value. A per-line floor would have split it.
+    (is (= [{:from 1 :to 1 :caution 1.0}
+            {:from 2 :to 5 :caution 0.5}
+            {:from 6 :to 6 :caution 1.0}]
+           (caution/assess
+            (h/history "
+# v1 Human
+h1
+h2
+h3
+# v2 Agent
+h1
+a1
+a2
+a3
+h3
+# v3 Human
+h1
+a1
+a2
+x
+a3
+h3
 ")
             {:ours #{:human}})))))
