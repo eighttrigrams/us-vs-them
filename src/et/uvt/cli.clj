@@ -60,8 +60,15 @@
   machines are many or nameless, and it is not softened by the default above,
   because a guest list that quietly admits strangers is not one.
 
-  Name both and the guest list wins, with anyone also called a machine struck off."
+  **Naming both is refused, not resolved.** The two disagree precisely about
+  everyone unnamed — the blacklist says treat them as people, the guest list says
+  they are not on it — so there is no reading of the pair that is not a silent
+  choice between them. Any rule picked here would be arbitrary and invisible, and
+  the one thing worse than being asked to say it again is being told confidently the
+  wrong thing about who wrote what."
   [authors {:keys [ours theirs]}]
+  (when (and (seq ours) (seq theirs))
+    (throw (ex-info "Name either --ours or --theirs, not both." {:ours ours :theirs theirs})))
   (into #{} (remove (set theirs)) (if (seq ours) ours authors)))
 
 (defn- report
@@ -82,7 +89,9 @@
   (println "  --theirs EMAIL   a committer that is a machine. Everyone not")
   (println "                   named is taken to be a person.")
   (println "  --ours EMAIL     a committer that is a person, and a guest list:")
-  (println "                   nobody unnamed gets on it."))
+  (println "                   nobody unnamed gets on it.")
+  (println)
+  (println "  One or the other, not both — they disagree about everyone unnamed."))
 
 (defn -main [& args]
   (loop [args args
@@ -99,11 +108,19 @@
       (usage)
 
       :else
-      (let [path (str/trim (git "ls-files" "--full-name" "--" (first args)))
-            history (versions path)]
-        (if (empty? history)
-          (binding [*out* *err*]
-            (println (str "no git history for " (first args)))
-            (System/exit 1))
-          (report (caution/assess history
-                                  {:ours (audience (map :source history) sides)})))))))
+      (let [file (first args)]
+        ;; Checked before a single git call, because a contradiction in the flags
+        ;; is not something a file's history could settle.
+        (try
+          (audience [] sides)
+          (catch clojure.lang.ExceptionInfo e
+            (binding [*out* *err*] (println (ex-message e)))
+            (System/exit 1)))
+        (let [path (str/trim (git "ls-files" "--full-name" "--" file))
+              history (versions path)]
+          (if (empty? history)
+            (binding [*out* *err*]
+              (println (str "no git history for " file))
+              (System/exit 1))
+            (report (caution/assess history
+                                    {:ours (audience (map :source history) sides)}))))))))

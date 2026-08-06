@@ -24,9 +24,15 @@
     (is (= #{"dan"}
            (cli/audience authors {:ours #{"dan"}}))))
 
-  (testing "naming both, the guest list wins and the machines are struck from it"
-    (is (= #{"dan"}
-           (cli/audience authors {:ours #{"dan" "claude"} :theirs #{"claude"}}))))
+  (testing "naming both is refused, not resolved"
+    ;; The two flags disagree about what to do with everyone unnamed — the blacklist
+    ;; says treat them as people, the guest list says they are not on it — so there
+    ;; is no reading of both together that is not a silent choice between them. Any
+    ;; rule picked here would be arbitrary and invisible, and the one thing worse
+    ;; than being asked to say it again is being told confidently the wrong thing
+    ;; about who wrote what.
+    (is (thrown-with-msg? clojure.lang.ExceptionInfo #"not both"
+                          (cli/audience authors {:ours #{"dan"} :theirs #{"claude"}}))))
 
   (testing "naming nobody, everyone is a person"
     (is (= #{"dan" "claude" "someone-new"}
