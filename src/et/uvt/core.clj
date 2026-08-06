@@ -8,40 +8,19 @@
   or an agent, only whether two of them are the same, so a caller can spell the two
   sides however it already spells them.
 
-  A **line** of the result has the very same shape, and that is the whole move: an
-  attribution takes one text carrying one source and gives back its lines, each
-  carrying the source it actually came from. Because the two shapes agree, the
-  result of attributing a pair is the kind of thing that can be attributed against
-  the next version in turn — which is how a whole history will eventually be folded
-  into one answer.
+  A **line** of the result is `{:text \"…\" :source <marker>}` — one text's worth of
+  lines, each carrying the source it actually came from rather than the one marker
+  the whole version arrived under.
 
-  Right now there is one function and it handles one pair. What it does not yet do
-  is the gradient: a line here is simply *whose*, where the point of the library is
-  ultimately *how much* whose, and how long ago. That arrives when there are tests
-  for it.")
+  This namespace has no test of its own. `caution` is the only caller and its test
+  is the only spec, so nothing lives here that the fold above does not ask for.")
 
 (defn- lines
   "The lines of a text, as a vector. Splitting rather than parsing, because a line is
   the unit the caller reasons about — an agent is told 'be careful around 5–17' —
   and it is the unit a diff aligns on."
   [text]
-  (if (= "" text)
-    []
-    (vec (.split ^String text "\n" -1))))
-
-(defn- attributed
-  "The `before` side, as attributed lines.
-
-  A version — one text under one source — spreads that source over every line it
-  has. An attribution is already a sequence of attributed lines and is taken as it
-  stands, each line keeping the source it earned. That second case is what makes the
-  fold possible: one attribution becomes the `before` of the next version, and lines
-  that keep surviving keep the source they had, however far back it was set."
-  [before]
-  (if (map? before)
-    (mapv (fn [line] {:text line :source (:source before)})
-          (lines (:text before)))
-    (vec before)))
+  (vec (.split ^String text "\n" -1)))
 
 (defn- lcs-table
   "The classic longest-common-subsequence length table over two vectors of lines,
@@ -76,19 +55,18 @@
   `before` and are gone are simply not in the result; there is no line left to be
   careful about.
 
-  Note what the attribution of a surviving line is **not**: it is not a claim that
-  `before`'s source wrote it. It is a claim that `before` is as far back as this
-  function can see. Folding the version before that one in is what pushes the answer
-  further back, and it is why `before` may itself be an attribution — pass one, and
-  a surviving line keeps whatever source it already had rather than collapsing to a
-  single marker for the whole of the earlier text.
+  A surviving line comes back as **the very map it already was**, untouched. That is
+  what carries anything a caller has hung on it — an island, a weight — across the
+  fold without this namespace having to know the key exists. A new line comes back
+  as `{:text :source}` and nothing else, which is also how a caller tells that it is
+  new.
 
-  One argument is the degenerate case: a lone version, its source spread over its
-  own lines, which is where a fold over a history starts."
-  ([before]
-   (attributed before))
+  One argument is the degenerate case: a lone version, its source spread over its own
+  lines, which is where a fold over a history starts."
+  ([{:keys [text source]}]
+   (mapv (fn [line] {:text line :source source}) (lines text)))
   ([before {after :text after-source :source}]
-   (let [a (attributed before)
+   (let [a before
          a-text (mapv :text a)
          b (lines after)
          table (lcs-table a-text b)]

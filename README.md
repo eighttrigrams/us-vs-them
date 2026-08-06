@@ -57,18 +57,10 @@ text out, each saying how careful an agent should be there.
 ;    {:from 4 :to 4 :caution 1.0}]
 ```
 
-**`et.uvt.core`** is the intermediate result underneath it — one pair of versions in,
-the later one's lines out, each with the source it came from.
-
-```clojure
-(require '[et.uvt.core :as core])
-
-(core/attribute {:text "alpha\nbeta"          :source :human}
-                {:text "alpha\nnew\nbeta"     :source :agent})
-;=> [{:text "alpha" :source :human}
-;    {:text "new"   :source :agent}
-;    {:text "beta"  :source :human}]
-```
+**`et.uvt.core`** is the diff underneath it — one pair of versions in, the later
+one's lines out, each with the source it came from. It has no test and no public
+promise of its own: the `caution` test is the only spec, and core holds only what
+that spec asks for.
 
 Two things separate the layers. `core` sees exactly one change back, so a whole
 history has to be replayed above it — an attribution is a legal `before`, so the
