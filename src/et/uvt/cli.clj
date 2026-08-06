@@ -50,14 +50,14 @@
   You name whichever side is the shorter list, and the two flags are not mirror
   images of each other — they read differently on purpose.
 
-  `--theirs` is a **blacklist**: these are machines, everyone else is a person. A
+  `--theirs` is a **blacklist**: these are agents, everyone else is a human. A
   committer nobody has classified comes out as one of us, which is the way round
   that costs least when you are wrong — the mistake is an agent being needlessly
   careful with its own work rather than editing yours freely.
 
   `--ours` is a **guest list**: these are the people, and saying it means saying it.
   Nobody unnamed gets on. That is the flag for when the humans are few and the
-  machines are many or nameless, and it is not softened by the default above,
+  agents are many or nameless, and it is not softened by the default above,
   because a guest list that quietly admits strangers is not one.
 
   **Naming both is refused, not resolved.** The two disagree precisely about
@@ -86,9 +86,9 @@
   (println)
   (println "  Name whichever side is the shorter list. Repeat either flag.")
   (println)
-  (println "  --theirs EMAIL   a committer that is a machine. Everyone not")
-  (println "                   named is taken to be a person.")
-  (println "  --ours EMAIL     a committer that is a person, and a guest list:")
+  (println "  --theirs EMAIL   a committer that is an agent. Everyone not")
+  (println "                   named is taken to be a human.")
+  (println "  --ours EMAIL     a committer that is a human, and a guest list:")
   (println "                   nobody unnamed gets on it.")
   (println)
   (println "  One or the other, not both — they disagree about everyone unnamed."))
