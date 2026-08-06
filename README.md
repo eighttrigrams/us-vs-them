@@ -36,6 +36,49 @@ version to whoever's change it survived or arrived in, and accumulate that into 
 per-line heritage. The caution heuristic reads off the accumulation: how much of this
 line is human, how much agentic, and how long ago.
 
+## Usage
+
+The tool is meant to be used as a library as well as from the command line.
+
+The latter requires [bbin](https://github.com/babashka/bbin) for a local install.
+
+```sh
+make install
+```
+
+Then, anywhere inside a git repository:
+
+```sh
+us-vs-them --ours dan@eighttrigrams.net README.md
+```
+
+```
+1-3          0.00
+4            1.00
+5-7          0.00
+8-20         0.46
+21-164       0.00
+```
+
+A git repository is already a history of versions each carrying a provenance
+marker — every revision of the file, in order, with the author of the change that
+made it.
+
+Name whichever side is the shorter list. The two flags are repeatable, and they are
+not mirror images of each other — they read differently on purpose.
+
+`--theirs` is a **blacklist**: these are machines, everyone else is considered human.
+
+`--ours` is a **guest list**: these are the humans, and saying it means saying it.
+
+Passing both arguments at the same time will be rejected.
+
+## Development
+
+```sh
+make test
+```
+
 ## Status
 
 Early, and built out test-first. Two namespaces.
@@ -116,49 +159,3 @@ much as one from this morning, and it shouldn't.
 
 Consumed as a library via `deps.edn`; local consumers point at it with
 `:local/root`.
-
-## Command line
-
-Requires [bbin](https://github.com/babashka/bbin). Runs under babashka, which is why
-nothing in the library reaches for Java.
-
-```sh
-make install
-```
-
-Then, anywhere inside a git repository:
-
-```sh
-us-vs-them --theirs claude@eighttrigrams.net src/clj/et/tr/db/category.clj
-```
-
-```
-1-210        0.24
-211-305      0.00
-```
-
-A git repository is already a history of versions each carrying a provenance
-marker — every revision of the file, in order, with the author of the change that
-made it. Nothing has to be recorded specially and nothing can drift, because git
-recorded it at the time.
-
-Name whichever side is the shorter list. The two flags are repeatable, and they are
-not mirror images of each other — they read differently on purpose.
-
-`--theirs` is a **blacklist**: these are machines, everyone else is a person. A
-committer nobody has classified comes out as one of us, which is the way round that
-costs least when you are wrong — the mistake is an agent being needlessly careful
-with its own work rather than editing yours freely.
-
-`--ours` is a **guest list**: these are the people, and saying it means saying it.
-Nobody unnamed gets on. Reach for it when the humans are few and the machines are
-many or nameless. It is deliberately not softened by the default above, because a
-guest list that quietly admits strangers is not one.
-
-Name both and the guest list wins, with anyone also called a machine struck off.
-
-## Development
-
-```sh
-make test
-```
