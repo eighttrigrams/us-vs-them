@@ -1,33 +1,42 @@
 (ns et.uvt.caution-test
-  "The seed test for the layer we actually want to think from: not *whose is this
+  "The seed tests for the layer we actually want to think from: not *whose is this
   line* but *how careful should an agent be here*, over a whole text.
 
-  The history is three versions and not two, which is the point. Attributing only
-  the last pair would see a text whose previous version was written by the agent,
-  and would hand the agent's source to every line that survived into the last one —
-  including the two the human wrote at the start and nobody has touched since. A
-  pair can only ever see one change back; the answer to *how careful* has to see all
-  the way down.
-
-  The verdict is a number on a scale, `1` sacred and `0` up for grabs, because
-  caution is a spectrum and a label cannot hold a middle. Only the two ends are
-  reachable yet: the fold still overwrites a line's source rather than accumulating
-  into it, so `1` here means no more than *the last hand on this line was ours* and
-  `0` that it was theirs. What puts a line between them — mixed heritage, a human
-  edit old enough to have stopped mattering — comes next, and it arrives as values
-  this shape can already carry."
+  Each history is written out flat — `# v1 Agent` and then that version's lines —
+  because what a test here turns on is which line moved between two versions, and
+  that is visible when the versions stack up and invisible in a vector of escaped
+  strings. See `et.uvt.test-helpers`."
   (:require [clojure.test :refer [deftest testing is]]
-            [et.uvt.caution :as caution]))
+            [et.uvt.caution :as caution]
+            [et.uvt.test-helpers :as h]))
 
 (deftest assess-test
   (testing "a history replayed to the end, in ranges, with the agent's own work marked out"
+    ;; Three versions and not two, which is the point. Attributing only the last
+    ;; pair would see a text whose previous version was written by the agent, and
+    ;; would hand the agent's source to every line that survived into the last one
+    ;; — including the two we wrote at the start and nobody has touched since. A
+    ;; pair can only ever see one change back; the answer to *how careful* has to
+    ;; see all the way down.
     (is (= [{:from 1 :to 2 :caution 1.0}
             {:from 3 :to 3 :caution 0.0}
             {:from 4 :to 4 :caution 1.0}]
-           (caution/assess [{:text "alpha\nbeta"                    :source :human}
-                            {:text "alpha\nbeta\ngamma"             :source :agent}
-                            {:text "alpha\nbeta\ngamma\ndelta"      :source :human}]
-                           {:ours #{:human}})))))
+           (caution/assess
+            (h/history "
+# v1 Human
+alpha
+beta
+# v2 Agent
+alpha
+beta
+gamma
+# v3 Human
+alpha
+beta
+gamma
+delta
+")
+            {:ours #{:human}})))))
 
 (deftest contamination-test
   (testing "an agent line landing inside our island joins it and dilutes it, rather than splitting it"
@@ -53,7 +62,24 @@
     (is (= [{:from 1 :to 1 :caution 0.0}
             {:from 2 :to 5 :caution 0.9}
             {:from 6 :to 6 :caution 0.0}]
-           (caution/assess [{:text "a1\na2\na3"            :source :agent}
-                            {:text "a1\nh1\nh2\nh3\na3"    :source :human}
-                            {:text "a1\nh1\nh2\nx\nh3\na3" :source :agent}]
-                           {:ours #{:human}})))))
+           (caution/assess
+            (h/history "
+# v1 Agent
+a1
+a2
+a3
+# v2 Human
+a1
+h1
+h2
+h3
+a3
+# v3 Agent
+a1
+h1
+h2
+x
+h3
+a3
+")
+            {:ours #{:human}})))))
