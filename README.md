@@ -116,7 +116,7 @@ make install
 Then, anywhere inside a git repository:
 
 ```sh
-us-vs-them --theirs claude@eighttrigrams.net src/et/tr/db/category.clj
+us-vs-them --theirs claude@eighttrigrams.net src/clj/et/tr/db/category.clj
 ```
 
 ```
@@ -129,11 +129,20 @@ marker — every revision of the file, in order, with the author of the change t
 made it. Nothing has to be recorded specially and nothing can drift, because git
 recorded it at the time.
 
-**Being human is the default.** You name the machines with `--theirs`, repeatably,
-and everyone else is us. That is the right way round: a committer nobody has
-classified should be treated as a person until someone says otherwise, because the
-failure that costs something is an agent editing your work freely, not an agent
-being needlessly careful with its own.
+Name whichever side is the shorter list. The two flags are repeatable, and they are
+not mirror images of each other — they read differently on purpose.
+
+`--theirs` is a **blacklist**: these are machines, everyone else is a person. A
+committer nobody has classified comes out as one of us, which is the way round that
+costs least when you are wrong — the mistake is an agent being needlessly careful
+with its own work rather than editing yours freely.
+
+`--ours` is a **guest list**: these are the people, and saying it means saying it.
+Nobody unnamed gets on. Reach for it when the humans are few and the machines are
+many or nameless. It is deliberately not softened by the default above, because a
+guest list that quietly admits strangers is not one.
+
+Name both and the guest list wins, with anyone also called a machine struck off.
 
 ## Development
 

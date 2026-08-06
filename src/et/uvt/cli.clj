@@ -44,6 +44,26 @@
                  {:text (str/replace (git "show" (str sha ":" path)) #"\n\z" "")
                   :source email})))))
 
+(defn audience
+  "Which of a file's committers count as us.
+
+  You name whichever side is the shorter list, and the two flags are not mirror
+  images of each other — they read differently on purpose.
+
+  `--theirs` is a **blacklist**: these are machines, everyone else is a person. A
+  committer nobody has classified comes out as one of us, which is the way round
+  that costs least when you are wrong — the mistake is an agent being needlessly
+  careful with its own work rather than editing yours freely.
+
+  `--ours` is a **guest list**: these are the people, and saying it means saying it.
+  Nobody unnamed gets on. That is the flag for when the humans are few and the
+  machines are many or nameless, and it is not softened by the default above,
+  because a guest list that quietly admits strangers is not one.
+
+  Name both and the guest list wins, with anyone also called a machine struck off."
+  [authors {:keys [ours theirs]}]
+  (into #{} (remove (set theirs)) (if (seq ours) ours authors)))
+
 (defn- report
   [ranges]
   (doseq [{:keys [from to caution]} ranges]
@@ -52,23 +72,28 @@
                      caution))))
 
 (defn- usage []
-  (println "usage: us-vs-them [--theirs EMAIL]... FILE")
+  (println "usage: us-vs-them [--ours EMAIL]... [--theirs EMAIL]... FILE")
   (println)
   (println "  Ranges of FILE, each with how careful an agent should be in it —")
   (println "  1 sacred, 0 up for grabs — read off the file's git history.")
   (println)
-  (println "  --theirs EMAIL   a committer that is a machine. Repeatable.")
-  (println "                   Everyone not named is taken to be a person."))
+  (println "  Name whichever side is the shorter list. Repeat either flag.")
+  (println)
+  (println "  --theirs EMAIL   a committer that is a machine. Everyone not")
+  (println "                   named is taken to be a person.")
+  (println "  --ours EMAIL     a committer that is a person, and a guest list:")
+  (println "                   nobody unnamed gets on it."))
 
 (defn -main [& args]
   (loop [args args
-         theirs #{}]
+         sides {}]
     (cond
       (empty? args)
       (do (usage) (System/exit 1))
 
-      (= "--theirs" (first args))
-      (recur (drop 2 args) (conj theirs (second args)))
+      (#{"--ours" "--theirs"} (first args))
+      (recur (drop 2 args)
+             (update sides (keyword (subs (first args) 2)) (fnil conj #{}) (second args)))
 
       (#{"-h" "--help"} (first args))
       (usage)
@@ -81,4 +106,4 @@
             (println (str "no git history for " (first args)))
             (System/exit 1))
           (report (caution/assess history
-                                  {:ours (into #{} (remove theirs) (map :source history))})))))))
+                                  {:ours (audience (map :source history) sides)})))))))
