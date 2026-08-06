@@ -42,18 +42,26 @@
   into being; a line that kept its island survived. New lines come in contiguous
   runs, one run per place the change touched, and each run goes one of two ways.
 
-  **It joins the island around it** when it landed strictly inside one — the same
-  island above and below — and that island still outweighs it. Then the island holds
-  its identity and merely gets diluted, which is the whole reason islands are here.
+  **It joins the island around it** when it is theirs, and landed strictly inside
+  one — the same island above and below — and that island still outweighs it. Then
+  the island holds its identity and merely gets diluted, which is the whole reason
+  islands are here.
 
   **Otherwise it becomes an island of its own.** That covers a run at either end of
-  the text, a run between two different islands, and — the interesting case — a run
-  so large that calling it an insertion would be a fiction. Three lines dropped into
-  a three-line island is not a dilution of that island, it is a new one; thirty
-  agent lines in the middle of our seven really is two fragments with a block
-  between them. Where the line falls is the one number this rule turns on, and it is
-  the only place a threshold lives."
-  [lines]
+  the text, a run between two different islands, a run so large that calling it an
+  insertion would be a fiction — three lines dropped into a three-line island is not
+  a dilution of that island, it is a new one — and, the asymmetric case, *any run of
+  ours*.
+
+  That last clause is the one place the two sides are treated differently, and it is
+  where the metaphor is taken at its word. Their line landing in our island is
+  contamination: we keep hold of it, so that it cannot be edited freely in the
+  middle of our work. Our line landing in theirs is a landing and not an
+  assimilation — it stays ours, whole, because nothing we write by hand is made
+  cheap by what happens to surround it. Absorption runs one way only.
+
+  Everything else here is blind to whose a line is; only this is not."
+  [ours lines]
   (let [runs (vec (partition-by :island lines))
         sizes (frequencies (keep :island lines))]
     (loop [i 0
@@ -70,7 +78,8 @@
                           (:island (first (nth runs (inc i)))))
                   host (when (and above
                                   (= above below)
-                                  (> (sizes above) (count run)))
+                                  (> (sizes above) (count run))
+                                  (not (contains? ours (:source (first run)))))
                          above)]
               (recur (inc i)
                      (if host id (inc id))
@@ -80,42 +89,34 @@
   "Every line of the newest version, in its island, by replaying the history from
   the beginning. Each version is diffed against what the fold has built so far and
   then settled, because an island can only be recognised at the moment it forms."
-  [[oldest & later]]
-  (reduce (fn [lines version] (settle (core/attribute lines version)))
-          (settle (core/attribute oldest))
+  [ours [oldest & later]]
+  (reduce (fn [lines version] (settle ours (core/attribute lines version)))
+          (settle ours (core/attribute oldest))
           later))
-
-(def ^:private weight
-  "What a line of ours counts for, against one of theirs.
-
-  Not one. The mechanism above this is perfectly symmetric — `settle` never even
-  looks at a source — and symmetry gets the answer wrong in the mirror. Their line
-  among three of ours would dilute our island exactly as far as our line among three
-  of theirs would lift theirs, which puts a line we wrote by hand at a quarter,
-  cheap enough for an agent to change, on the strength of its neighbours alone. A
-  line of ours is not made cheap by what surrounds it.
-
-  So the asymmetry is written here, and it is the first principle written down: what
-  a human knows counts for more than what a machine knows."
-  3)
 
 (defn- caution-of
   "Each island's caution, on a scale from `0` to `1` — `1` sacred, `0` up for grabs.
 
   A number rather than a name, because caution is a spectrum and a name has no
-  middle to put anything in. The weighted share of an island that is ours is what
+  middle to put anything in. The share of an island's lines that are ours is what
   puts it in that middle: wholly ours it stands at `1`, and every line of theirs
   landing in it moves it down without ever quite reaching `0`, which is the right
   shape — a place we made does not become theirs outright by being edited.
+
+  A plain share, unweighted, because the asymmetry is already spent in `settle`. It
+  was tempting to put it here instead — to count a line of ours for three of theirs
+  — and that works, but it buys the same protection twice and leaves an arbitrary
+  number lying in the arithmetic. Only their lines are ever absorbed, so an island
+  of theirs cannot be lifted by ours arriving, and there is nothing left for a
+  weight to defend against.
 
   What this still does not weigh is *when*. A line of ours from a year ago counts
   exactly as much here as one from this morning."
   [ours lines]
   (update-vals (group-by :island lines)
                (fn [island]
-                 (let [{mine true theirs false} (group-by #(contains? ours (:source %)) island)
-                       mine (* weight (count mine))]
-                   (double (/ mine (+ mine (count theirs))))))))
+                 (double (/ (count (filter (comp ours :source) island))
+                            (count island))))))
 
 (defn assess
   "Ranges of `history`'s newest text, each with how careful an agent should be in it.
@@ -128,7 +129,7 @@
   collapse happens here, at the end, over final values — not while folding — because
   a line's value is not settled until the last version has been replayed."
   [history {:keys [ours]}]
-  (let [lines (heritage history)
+  (let [lines (heritage ours history)
         value (caution-of ours lines)]
     (->> lines
          (map-indexed (fn [i line] {:line (inc i) :caution (value (:island line))}))
