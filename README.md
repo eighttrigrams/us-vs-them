@@ -89,6 +89,12 @@ landing in theirs is a landing, not an assimilation: it stays an island of its o
 at `1`, because nothing you write by hand should be made cheap by what happens to
 surround it. Every other part of the mechanism is blind to whose a line is.
 
+Islands also **rejoin**. Two of yours separated by a block of theirs become one
+again when that block goes away — they were only ever two because something stood
+between them. That never moves a number on its own, since only unmixed islands of
+the same side merge; it changes what happens next, because absorption weighs itself
+against the island's size.
+
 What is still missing is **when**. A line of yours from a year ago counts exactly as
 much as one from this morning, and it shouldn't.
 

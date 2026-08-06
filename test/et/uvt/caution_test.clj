@@ -119,3 +119,60 @@ h3
             {:from 5 :to 5 :caution 0.0}
             {:from 6 :to 6 :caution 1.0}]
            (caution/assess (h/history landing-history) {:ours #{:human}})))))
+
+;; Where `landing-history` left off, plus two more versions.
+;;
+;; In v4 we delete `a3`, and with it the last thing standing between our line `x`
+;; and our original `h3`. Nothing separates them now, so they stop being two islands
+;; and become one. That merge is invisible in v4's own answer — both read `1`
+;; either way — and the only reason to make it is what it changes about v5.
+;;
+;; In v5 the agent puts a line down between them. Coalesced, it lands strictly
+;; inside one island of ours, three lines against its one, and is absorbed: the
+;; island dilutes to `0.75` and holds the new line close. Left as two islands it
+;; would have been flanked by two *different* ones, formed an island of its own, and
+;; sat there at `0` — freely editable, between two lines we wrote by hand.
+;;
+;; Note that `h1` comes down to `0.75` as well, though it is nowhere near the
+;; agent's line. Islands are not contiguous: `h1` and `h3` have been one island
+;; since v2 put the agent's block through the middle of them, and dilution is a
+;; property of the island, not of the neighbourhood.
+(def rejoining-history "
+# v1 Human
+h1
+h2
+h3
+# v2 Agent
+h1
+a1
+a2
+a3
+h3
+# v3 Human
+h1
+a1
+a2
+x
+a3
+h3
+# v4 Human
+h1
+a1
+a2
+x
+h3
+# v5 Agent
+h1
+a1
+a2
+x
+y
+h3
+")
+
+(deftest rejoining-test
+  (testing "two islands of ours become one when what stood between them goes away"
+    (is (= [{:from 1 :to 1 :caution 0.75}
+            {:from 2 :to 3 :caution 0.0}
+            {:from 4 :to 6 :caution 0.75}]
+           (caution/assess (h/history rejoining-history) {:ours #{:human}})))))

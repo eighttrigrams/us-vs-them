@@ -85,14 +85,57 @@
                      (if host id (inc id))
                      (into out (map #(assoc % :island (or host id)) run))))))))))
 
+(defn- side
+  "Which side an island is on — `true` ours, `false` theirs, `nil` if it holds both."
+  [ours island]
+  (let [sides (set (map #(contains? ours (:source %)) island))]
+    (when (= 1 (count sides))
+      (first sides))))
+
+(defn- coalesce
+  "Make one island of two that have come to lie against each other with nothing
+  between them and nothing to tell them apart.
+
+  Islands are born separate because something separated them — our line went down
+  inside their block, so it was its own island and not part of theirs. Delete the
+  block and that reason is gone: two stretches of ours now run straight into one
+  another, and there is nothing left that made them two.
+
+  **Only unmixed islands of the same side merge**, which is exactly the condition
+  under which merging cannot change what either one is worth. Both stand at `1`, or
+  both at `0`, before and after. So this never moves a number by itself — it only
+  changes what happens next, because absorption asks for the *same* island above and
+  below and weighs itself against that island's size. Two of our islands lying
+  side by side will take nothing in between them; one island of the same lines
+  will.
+
+  Merging into the lower id keeps this from oscillating, and each pass strictly
+  reduces the number of islands, so the repeat terminates."
+  [ours lines]
+  (let [sides (update-vals (group-by :island lines) #(side ours %))
+        merges (into {}
+                     (for [[a b] (partition 2 1 (partition-by :island lines))
+                           :let [ia (:island (first a))
+                                 ib (:island (first b))]
+                           :when (and (some? (sides ia))
+                                      (= (sides ia) (sides ib)))]
+                       [(max ia ib) (min ia ib)]))]
+    (if (empty? merges)
+      lines
+      (recur ours (mapv #(update % :island (fn [id] (get merges id id))) lines)))))
+
 (defn- heritage
   "Every line of the newest version, in its island, by replaying the history from
   the beginning. Each version is diffed against what the fold has built so far and
-  then settled, because an island can only be recognised at the moment it forms."
+  then settled and coalesced, in that order and inside the fold rather than after
+  it. An island can only be recognised at the moment it forms, and its size decides
+  what the *next* version is allowed to put inside it, so neither step can wait for
+  the end."
   [ours [oldest & later]]
-  (reduce (fn [lines version] (settle ours (core/attribute lines version)))
-          (settle ours (core/attribute oldest))
-          later))
+  (let [step (fn [lines] (coalesce ours (settle ours lines)))]
+    (reduce (fn [lines version] (step (core/attribute lines version)))
+            (step (core/attribute oldest))
+            later)))
 
 (defn- caution-of
   "Each island's caution, on a scale from `0` to `1` — `1` sacred, `0` up for grabs.
