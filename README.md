@@ -72,15 +72,21 @@ its markers `"ui"` and `"machine"`.)
 ## Where it is going
 
 `:caution` is a number from `0` to `1` — `1` sacred, `0` up for grabs — because
-caution is a spectrum and a label has no middle to put anything in. Only the ends
-are reachable yet: the fold hands each line the last source to touch it, so today
-the answer is only ever *ours* or *theirs*. What puts a line between them is *how
-much* of its history is ours rather than just its last moment, and *how long ago*
-that moment was.
+caution is a spectrum and a label has no middle to put anything in.
 
-- Accumulate through the fold instead of overwriting, so fifteen agentic changes
-  landing on a human's lines register as fifteen.
-- Decay by age, so a human edit from a year ago stops holding an agent up.
+What puts a line in that middle is the **island** it belongs to. A stretch written
+in one go is one thing, and goes on being one thing while later changes shove its
+borders about; it gets an identity when it forms and keeps it through the fold. So
+an agent line landing inside your island joins the island and dilutes it — three of
+four lines still yours, `0.75` — rather than cutting it in two and leaving that one
+line freest to edit exactly where it is most entangled with your work. An island
+only breaks when what lands in it outweighs it, which is the difference between one
+inserted line and thirty.
+
+What is still missing is **when**. A line of yours from a year ago counts exactly as
+much as one from this morning, and it shouldn't.
+
+- Decay by age, so an old edit of yours stops holding an agent up.
 - A command line tool over a git history, so any repo can be asked the question.
 
 Consumed as a library via `deps.edn`; local consumers point at it with
