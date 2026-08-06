@@ -40,28 +40,54 @@ line is human, how much agentic, and how long ago.
 
 ## Status
 
-Early. One function, built out test-first.
+Early, and built out test-first. Two namespaces.
+
+**`et.uvt.caution`** is the one to think from — a history in, ranges of the newest
+text out, each saying how careful an agent should be there.
 
 ```clojure
-(require '[et.uvt.core :as uvt])
+(require '[et.uvt.caution :as caution])
 
-(uvt/attribute {:text "alpha\nbeta\n"          :source :human}
-               {:text "alpha\nnew line\nbeta\n" :source :agent})
-;=> [{:text "alpha"    :source :human}
-;    {:text "new line" :source :agent}
-;    {:text "beta"     :source :human}]
+(caution/assess [{:text "alpha\nbeta"               :source :human}
+                 {:text "alpha\nbeta\ngamma"        :source :agent}
+                 {:text "alpha\nbeta\ngamma\ndelta" :source :human}]
+                {:ours #{:human}})
+;=> [{:from 1 :to 2 :caution :sacred}
+;    {:from 3 :to 3 :caution :up-for-grabs}
+;    {:from 4 :to 4 :caution :sacred}]
 ```
 
-`:source` is whatever marker the caller uses; the library does not care what the two
-sides are called, only that they can be told apart. (Cookbook, the first consumer,
-calls them `"ui"` and `"machine"`.)
+**`et.uvt.core`** is the intermediate result underneath it — one pair of versions in,
+the later one's lines out, each with the source it came from.
+
+```clojure
+(require '[et.uvt.core :as core])
+
+(core/attribute {:text "alpha\nbeta"          :source :human}
+                {:text "alpha\nnew\nbeta"     :source :agent})
+;=> [{:text "alpha" :source :human}
+;    {:text "new"   :source :agent}
+;    {:text "beta"  :source :human}]
+```
+
+Two things separate the layers. `core` sees exactly one change back, so a whole
+history has to be replayed above it — an attribution is a legal `before`, so the
+replay is a fold. And `core` never asks what a source marker *means*, only whether
+two are equal, which is what lets a caller keep its own vocabulary; `caution` is
+where the two sides get told apart, by `:ours`. (Cookbook, the first consumer, calls
+its markers `"ui"` and `"machine"`.)
 
 ## Where it is going
 
-- Fold a whole version history, not just a pair, into one attribution.
-- Weight by *how many* changes touched a line and by *how recently*, to get the
-  gradient rather than the last writer.
-- Roll lines up into ranges an agent can be told about.
+The verdicts are two, and that is the honest extent of it: `:sacred` means the last
+hand on this line was ours, `:up-for-grabs` that it was theirs. The spectrum needs
+two things neither layer has yet — *how much* of a line's history is ours rather
+than just its last moment, and *how long ago* that was. Both want a version to carry
+a timestamp, and the answer to carry a weight rather than a label.
+
+- Accumulate through the fold instead of overwriting, so fifteen agentic changes
+  landing on a human's lines register as fifteen.
+- Decay by age, so a human edit from a year ago stops holding an agent up.
 - A command line tool over a git history, so any repo can be asked the question.
 
 Consumed as a library via `deps.edn`; local consumers point at it with

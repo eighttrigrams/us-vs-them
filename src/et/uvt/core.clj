@@ -29,6 +29,20 @@
     []
     (vec (.split ^String text "\n" -1))))
 
+(defn- attributed
+  "The `before` side, as attributed lines.
+
+  A version — one text under one source — spreads that source over every line it
+  has. An attribution is already a sequence of attributed lines and is taken as it
+  stands, each line keeping the source it earned. That second case is what makes the
+  fold possible: one attribution becomes the `before` of the next version, and lines
+  that keep surviving keep the source they had, however far back it was set."
+  [before]
+  (if (map? before)
+    (mapv (fn [line] {:text line :source (:source before)})
+          (lines (:text before)))
+    (vec before)))
+
 (defn- lcs-table
   "The classic longest-common-subsequence length table over two vectors of lines,
   as a vector of rows, `(inc (count a))` by `(inc (count b))`.
@@ -65,29 +79,37 @@
   Note what the attribution of a surviving line is **not**: it is not a claim that
   `before`'s source wrote it. It is a claim that `before` is as far back as this
   function can see. Folding the version before that one in is what pushes the answer
-  further back, and it is why the result is shaped like the input."
-  [{before :text before-source :source} {after :text after-source :source}]
-  (let [a (lines before)
-        b (lines after)
-        table (lcs-table a b)]
-    (loop [i (count a)
-           j (count b)
-           acc ()]
-      (cond
-        (zero? j)
-        (vec acc)
+  further back, and it is why `before` may itself be an attribution — pass one, and
+  a surviving line keeps whatever source it already had rather than collapsing to a
+  single marker for the whole of the earlier text.
 
-        (and (pos? i) (= (nth a (dec i)) (nth b (dec j))))
-        (recur (dec i) (dec j) (conj acc {:text (nth b (dec j)) :source before-source}))
+  One argument is the degenerate case: a lone version, its source spread over its
+  own lines, which is where a fold over a history starts."
+  ([before]
+   (attributed before))
+  ([before {after :text after-source :source}]
+   (let [a (attributed before)
+         a-text (mapv :text a)
+         b (lines after)
+         table (lcs-table a-text b)]
+     (loop [i (count a)
+            j (count b)
+            acc ()]
+       (cond
+         (zero? j)
+         (vec acc)
 
-        ;; Not aligned here, so one side moves. Prefer stepping back through `after`
-        ;; — calling this line an addition — unless dropping a line of `before`
-        ;; instead leaves a longer agreement below, in which case that deletion is
-        ;; the better reading of what the change did.
-        (and (pos? i)
-             (> (nth (nth table (dec i)) j)
-                (nth (nth table i) (dec j))))
-        (recur (dec i) j acc)
+         (and (pos? i) (= (nth a-text (dec i)) (nth b (dec j))))
+         (recur (dec i) (dec j) (conj acc (nth a (dec i))))
 
-        :else
-        (recur i (dec j) (conj acc {:text (nth b (dec j)) :source after-source}))))))
+         ;; Not aligned here, so one side moves. Prefer stepping back through `after`
+         ;; — calling this line an addition — unless dropping a line of `before`
+         ;; instead leaves a longer agreement below, in which case that deletion is
+         ;; the better reading of what the change did.
+         (and (pos? i)
+              (> (nth (nth table (dec i)) j)
+                 (nth (nth table i) (dec j))))
+         (recur (dec i) j acc)
+
+         :else
+         (recur i (dec j) (conj acc {:text (nth b (dec j)) :source after-source})))))))
