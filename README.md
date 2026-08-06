@@ -1,25 +1,23 @@
 # us-vs-them
 
 Line-level provenance for text under agentic editing — **who wrote this line, us or
-them?** — derived from a file's version history rather than from markup in the file.
+them?** — derived from a texts version history.
 
 ## The problem
 
-With agentic coding and editing, provenance becomes the pertinent question. Text a
-human wrote or edited is close to sacred: an agent needs a very good reason to touch
-it. Text an agent produced in the first place, or has since edited into something
-predominantly its own, is up for grabs — an agent should feel free there.
+With agentic coding and editing, provenance becomes a pertinent question. Text a
+human wrote or edited should be considered close to sacred: an agent should 
+be hesitant and have a very good reason to touch it. Slop another agent has produced,
+on the other hand, is completely up for grabs.
 
-That is not a binary, though. A line can be of mixed heritage, and it moves:
+The main constraint under which this should work is that a next version of a 
+text is created under identifiable authorship of either a human or an agent.
+As simple text (markdown) is omnipresent, we don't want to build on specifically marked-up text.
 
-- Lines 5–17 were written by a human. Sacred.
-- An agent then makes fifteen changes that land in that range. By now those lines are
-  mostly of agentic origin, whatever their beginning was.
-- And time counts. Something a human touched *recently* takes a very good reason
-  indeed; the further back a human edit sits, the less it should hold up an agent.
-
-So what we want out of a file is not a yes/no but a **gradient of caution** over its
-ranges of lines.
+The output of an evaluation over a given text are ranges of "islands" of lines of human-authored
+text, where human-authored is a gradient insofar as agent edits degrade the sacredness of that 
+given island slightly. Conversely, a human insertion into a streak of agentic text becomes a 
+new island.
 
 ## The approach: no markup
 
