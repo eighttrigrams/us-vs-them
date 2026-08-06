@@ -39,12 +39,19 @@
     ;; our work, which is backwards: a line sitting inside something we built
     ;; should inherit our caution, because changing it can break what surrounds
     ;; it. So it takes the island's value rather than its author's, and the
-    ;; island's value falls to the share of it that is still ours, three of four.
+    ;; island's value falls to the share of it that is still ours.
+    ;;
+    ;; Falls to `0.9`, not to three-quarters, because that share is weighted: a
+    ;; line of ours counts for three of theirs. Their one line among our three
+    ;; barely moves it. Mirror the case and the weight tells: our one line among
+    ;; their three lifts that island to `0.5`, contested, rather than leaving it
+    ;; near enough theirs to edit freely — which is the whole point, since a line
+    ;; we wrote by hand must not be made cheap by its neighbours.
     ;;
     ;; This is also the first thing that puts a line strictly between the two ends
     ;; of the scale, which is what the scale was for.
     (is (= [{:from 1 :to 1 :caution 0.0}
-            {:from 2 :to 5 :caution 0.75}
+            {:from 2 :to 5 :caution 0.9}
             {:from 6 :to 6 :caution 0.0}]
            (caution/assess [{:text "a1\na2\na3"            :source :agent}
                             {:text "a1\nh1\nh2\nh3\na3"    :source :human}

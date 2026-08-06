@@ -85,22 +85,37 @@
           (settle (core/attribute oldest))
           later))
 
+(def ^:private weight
+  "What a line of ours counts for, against one of theirs.
+
+  Not one. The mechanism above this is perfectly symmetric — `settle` never even
+  looks at a source — and symmetry gets the answer wrong in the mirror. Their line
+  among three of ours would dilute our island exactly as far as our line among three
+  of theirs would lift theirs, which puts a line we wrote by hand at a quarter,
+  cheap enough for an agent to change, on the strength of its neighbours alone. A
+  line of ours is not made cheap by what surrounds it.
+
+  So the asymmetry is written here, and it is the first principle written down: what
+  a human knows counts for more than what a machine knows."
+  3)
+
 (defn- caution-of
   "Each island's caution, on a scale from `0` to `1` — `1` sacred, `0` up for grabs.
 
   A number rather than a name, because caution is a spectrum and a name has no
-  middle to put anything in. The share of an island's lines that are ours is what
-  puts it in that middle: an island wholly ours stands at `1`, and every line of
-  theirs that lands in it moves it down without ever quite reaching `0`, which is
-  the right shape — a place we made does not become theirs outright by being edited.
+  middle to put anything in. The weighted share of an island that is ours is what
+  puts it in that middle: wholly ours it stands at `1`, and every line of theirs
+  landing in it moves it down without ever quite reaching `0`, which is the right
+  shape — a place we made does not become theirs outright by being edited.
 
   What this still does not weigh is *when*. A line of ours from a year ago counts
   exactly as much here as one from this morning."
   [ours lines]
   (update-vals (group-by :island lines)
                (fn [island]
-                 (double (/ (count (filter (comp ours :source) island))
-                            (count island))))))
+                 (let [{mine true theirs false} (group-by #(contains? ours (:source %)) island)
+                       mine (* weight (count mine))]
+                   (double (/ mine (+ mine (count theirs))))))))
 
 (defn assess
   "Ranges of `history`'s newest text, each with how careful an agent should be in it.

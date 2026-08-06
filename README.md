@@ -77,11 +77,17 @@ caution is a spectrum and a label has no middle to put anything in.
 What puts a line in that middle is the **island** it belongs to. A stretch written
 in one go is one thing, and goes on being one thing while later changes shove its
 borders about; it gets an identity when it forms and keeps it through the fold. So
-an agent line landing inside your island joins the island and dilutes it — three of
-four lines still yours, `0.75` — rather than cutting it in two and leaving that one
-line freest to edit exactly where it is most entangled with your work. An island
-only breaks when what lands in it outweighs it, which is the difference between one
-inserted line and thirty.
+an agent line landing inside your island joins the island and dilutes it — `0.9` —
+rather than cutting it in two and leaving that one line freest to edit exactly where
+it is most entangled with your work. An island only breaks when what lands in it
+outweighs it, which is the difference between one inserted line and thirty.
+
+`0.9` and not three-quarters because the share is **weighted**: a line of yours
+counts for three of theirs. The mechanism underneath is perfectly symmetric, and
+symmetry is wrong here — mirrored, it would put a line you had just written by hand
+at `0.25`, cheap enough to edit, on the strength of its neighbours alone. With the
+weight it comes out at `0.5`, contested. That is the first principle written into
+the arithmetic: what a human knows counts for more than what a machine knows.
 
 What is still missing is **when**. A line of yours from a year ago counts exactly as
 much as one from this morning, and it shouldn't.
