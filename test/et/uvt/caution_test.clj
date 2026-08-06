@@ -188,26 +188,71 @@ h3
 ;; looks like an empty line.
 ;;
 ;; The rule that fixes it says nothing about blank lines, which is how you know it
-;; is the right rule. **An isolated match is not a survival.** A line that aligned
-;; while both its neighbours changed did not survive our edit — it coincided with
-;; it. Nothing about that reasoning mentions whitespace; it would catch a stray
-;; `}` or `end` matching across a rewritten block just the same.
+;; is the right rule. **An isolated match is not a survival, if the line recurs.**
+;; A line that aligned while both its neighbours changed, and whose text turns up
+;; elsewhere in the document anyway, did not survive our edit — it coincided with
+;; it. Nothing in that reasoning mentions whitespace; it would catch a stray `}` or
+;; `end` matching across a rewritten block just the same.
+;;
+;; The document has blank lines in it more than once, which is the whole point and
+;; the reason this test is shaped the way it is. A separator that occurs *once* in a
+;; text is not evidence of nothing — matching it means something. It is the line
+;; that turns up forty times whose match proves nothing at all.
 (def coincidence-history "
 # v1 Agent
+intro
+
 a1
 a2
 
 a3
 a4
+
+outro
 # v2 Human
+intro
+
 h1
 h2
 
 h3
 h4
+
+outro
 ")
 
 (deftest coincidence-test
-  (testing "a line that aligned while both its neighbours changed did not survive, it coincided"
-    (is (= [{:from 1 :to 5 :caution 1.0}]
+  (testing "a recurring line that aligned while both its neighbours changed did not survive, it coincided"
+    (is (= [{:from 1 :to 2 :caution 0.0}
+            {:from 3 :to 7 :caution 1.0}
+            {:from 8 :to 9 :caution 0.0}]
            (caution/assess (h/history coincidence-history) {:ours #{:human}})))))
+
+;; And the other side of that rule, which is what stops it eating real work.
+;;
+;; We wrote three lines. The agent then rewrote the first and the third and left the
+;; middle one exactly as it stood. By position it looks just like the blank line
+;; above — an isolated match with both neighbours changed — and the rule as first
+;; written would have handed it to the agent along with everything around it.
+;;
+;; But it is a sentence, and it occurs once. A line that appears one time in the
+;; document and turns up again unchanged did survive; there is nothing else it could
+;; have been mistaken for. So it stays ours, in the middle of their rewrite, and
+;; this is the difference between an alignment that coincided and one that held.
+(def survivor-history "
+# v1 Human
+h1
+h2
+h3
+# v2 Agent
+x1
+h2
+x2
+")
+
+(deftest survivor-test
+  (testing "a line that occurs once and came through unchanged really did survive"
+    (is (= [{:from 1 :to 1 :caution 0.0}
+            {:from 2 :to 2 :caution 1.0}
+            {:from 3 :to 3 :caution 0.0}]
+           (caution/assess (h/history survivor-history) {:ours #{:human}})))))

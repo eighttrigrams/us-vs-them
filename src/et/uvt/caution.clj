@@ -97,25 +97,43 @@
   back cut into three, with a line of theirs wedged in the middle holding the pieces
   apart and dragging them off `1`.
 
-  So: **an isolated match is not a survival.** A line that aligned while both its
-  neighbours changed did not survive the edit, it coincided with it, and it is
+  So: **an isolated match is not a survival, if the line recurs.** A line that
+  aligned while both its neighbours changed, and whose text turns up elsewhere in
+  the document anyway, did not survive the edit — it coincided with it, and it is
   handed to the change like everything around it.
 
-  Note what this rule does not mention: whitespace, emptiness, length, or any
-  property of the line at all. That is the point. Special-casing blank lines would
-  be a guess about content dressed up as a rule; this is a statement about the
-  alignment, and it catches a stray brace across a rewritten block just as well.
+  That second clause is doing as much work as the first, and it was missing at
+  first. Position alone cannot tell a coincidence from a survival: a sentence left
+  standing in the middle of a rewritten passage sits in exactly the same place as a
+  blank line the diff happened to match, and the rule without it confiscates real
+  work. What separates them is that the sentence occurs *once*. A line that appears
+  one time in a document and turns up again unchanged did survive — there is nothing
+  else it could have been mistaken for. It is the line occurring forty times whose
+  match proves nothing.
+
+  Note what none of this mentions: whitespace, emptiness, length, or any property of
+  the line's content. That is the point. Special-casing blank lines would be a guess
+  about content dressed up as a rule; this is a statement about the alignment, and
+  it catches a stray brace across a rewritten block just as well.
+
+  Recurrence is counted in the new version only, where patience diff would ask it of
+  both. Enough here, and it needs no more than what is in hand.
 
   Only runs of exactly one, which falls out of asking that *both* neighbours be new.
   Two surviving lines together are already a thin thread of agreement, but they are
   a thread; one is a coincidence. And never at either end of the text, where a line
   has only one neighbour and there is nothing to be isolated between."
   [source lines]
-  (let [new? (fn [i] (and (contains? lines i)
+  (let [occurrences (frequencies (map :text lines))
+        recurs? (fn [line] (> (occurrences (:text line)) 1))
+        new? (fn [i] (and (contains? lines i)
                           (nil? (:island (nth lines i)))))]
     (into []
           (map-indexed (fn [i line]
-                         (if (and (:island line) (new? (dec i)) (new? (inc i)))
+                         (if (and (:island line)
+                                  (recurs? line)
+                                  (new? (dec i))
+                                  (new? (inc i)))
                            {:text (:text line) :source source}
                            line)))
           lines)))
