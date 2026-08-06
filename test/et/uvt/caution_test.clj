@@ -313,3 +313,58 @@ a2
     (is (= [{:from 1 :to 4 :caution 0.5}
             {:from 5 :to 6 :caution 0.0}]
            (caution/assess (h/history replacement-history) {:ours #{:human}})))))
+
+;; Where dilution has to stop, and the case a long-lived file walks straight into.
+;;
+;; Absorbing one line and absorbing thirty are not the same act, but the rule as
+;; first written could not tell them apart: it weighed the arriving run against
+;; the island *entire*, so anything smaller than the island was contamination.
+;; Over a hundred versions everything converges on that — one island covering the
+;; whole file, at some middling number, which is a true statement about the file
+;; and a useless one about any part of it. This library's own reason for existing
+;; is to say *where*.
+;;
+;; What was never pinned down is which island does the outweighing. Not the
+;; aggregate: what is actually at stake when something lands in the middle is
+;; **the smaller of the two pieces it would strand**. A line dropped in your
+;; paragraph cannot be edited without touching your work, so you keep hold of it.
+;; A block bigger than the land it separates is not a stain on anything — it has
+;; its own beginning and its own end, and it can be rewritten whole without
+;; disturbing a line of yours. So the island parts around it and it becomes water.
+;;
+;; Here four lines above and two below, and three arriving. Three beats two, so
+;; the two below are stranded and stand on their own rather than being dragged
+;; down with the rest. Nothing is diluted: both pieces are wholly ours, at `1`,
+;; and the agent's block sits between them at `0` where it can be edited freely.
+;;
+;; Note what this does *not* change. `contamination-history` above is one line
+;; against a piece of one — not more — so it is still held close at `0.75`, and
+;; `replacement-history` has no island lines on one side at all, so there is no
+;; channel there to cut. The two rules are the same rule, differing only in what
+;; the run is measured against.
+(def channel-history "
+# v1 Human
+h1
+h2
+h3
+h4
+h5
+h6
+# v2 Agent
+h1
+h2
+h3
+h4
+a1
+a2
+a3
+h5
+h6
+")
+
+(deftest channel-test
+  (testing "a block bigger than the land it strands is water, and the island parts around it"
+    (is (= [{:from 1 :to 4 :caution 1.0}
+            {:from 5 :to 7 :caution 0.0}
+            {:from 8 :to 9 :caution 1.0}]
+           (caution/assess (h/history channel-history) {:ours #{:human}})))))
