@@ -1,4 +1,4 @@
-(ns us-vs-them.core-test
+(ns et.uvt.core-test
   "The seed test for the whole library: one human version, one agent version, and
   the question of which lines of the result are whose.
 
@@ -10,7 +10,7 @@
   tail of a human's file, labelled agentic, is exactly the failure this library
   exists to prevent, so the first test rules it out rather than leaving it for later."
   (:require [clojure.test :refer [deftest testing is]]
-            [us-vs-them.core :as uvt]))
+            [et.uvt.core :as uvt]))
 
 (deftest attribute-test
   (testing "a line the agent inserted is theirs; the human's lines around it stay his"

@@ -43,7 +43,7 @@ line is human, how much agentic, and how long ago.
 Early. One function, built out test-first.
 
 ```clojure
-(require '[us-vs-them.core :as uvt])
+(require '[et.uvt.core :as uvt])
 
 (uvt/attribute {:text "alpha\nbeta\n"          :source :human}
                {:text "alpha\nnew line\nbeta\n" :source :agent})

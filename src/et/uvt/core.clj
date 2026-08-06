@@ -1,4 +1,4 @@
-(ns us-vs-them.core
+(ns et.uvt.core
   "Attributing the lines of a text to whoever put them there.
 
   A **version** here is `{:text \"…\" :source <marker>}` — a whole text, and one
