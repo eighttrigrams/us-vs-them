@@ -42,16 +42,30 @@
   into being; a line that kept its island survived. New lines come in contiguous
   runs, one run per place the change touched, and each run goes one of two ways.
 
-  **It joins the island around it** when it is theirs, and landed strictly inside
-  one — the same island above and below — and that island still outweighs it. Then
-  the island holds its identity and merely gets diluted, which is the whole reason
-  islands are here.
+  **It joins the island around it** when it is theirs, landed inside one, and that
+  island outweighs it. Then the island holds its identity and merely gets diluted,
+  which is the whole reason islands are here.
+
+  *Inside* is answered two ways, and the second matters more than the first. The
+  same island above and below is the obvious evidence, and it is all a pure
+  insertion leaves. But most edits are replacements, and a replacement's own
+  neighbours may be anything at all — rewrite the last paragraph of somebody's
+  section and what sits below it is whatever came next in the file. What that run
+  did is written in `:displaced`: it took away lines, and those lines belonged
+  somewhere. A run that turned out a stretch of an island landed in that island,
+  whatever it happens to abut.
+
+  **Outweighs what it was, not what is left of it.** The size to beat comes from
+  before the change, because the deletion and the insertion are one edit and
+  counting the remnant charges the island twice for it — six lines replacing six of
+  thirteen would be read as an even match against the seven survivors, when it is
+  plainly a dilution of a thirteen-line island.
 
   **Otherwise it becomes an island of its own.** That covers a run at either end of
-  the text, a run between two different islands, a run so large that calling it an
-  insertion would be a fiction — three lines dropped into a three-line island is not
-  a dilution of that island, it is a new one — and, the asymmetric case, *any run of
-  ours*.
+  the text, a run between two different islands that displaced nothing, a run so
+  large that calling it an insertion would be a fiction — three lines dropped into a
+  three-line island is not a dilution of that island, it is a new one — and, the
+  asymmetric case, *any run of ours*.
 
   That last clause is the one place the two sides are treated differently, and it is
   where the metaphor is taken at its word. Their line landing in our island is
@@ -61,9 +75,8 @@
   cheap by what happens to surround it. Absorption runs one way only.
 
   Everything else here is blind to whose a line is; only this is not."
-  [ours lines]
-  (let [runs (vec (partition-by :island lines))
-        sizes (frequencies (keep :island lines))]
+  [ours sizes lines]
+  (let [runs (vec (partition-by :island lines))]
     (loop [i 0
            id (fresh-id lines)
            out []]
@@ -76,11 +89,14 @@
                           (:island (last (nth runs (dec i)))))
                   below (when (< (inc i) (count runs))
                           (:island (first (nth runs (inc i)))))
-                  host (when (and above
-                                  (= above below)
-                                  (> (sizes above) (count run))
+                  displaced (:displaced (first run))
+                  inside (cond
+                           (and above (= above below)) above
+                           (= 1 (count displaced)) (first displaced))
+                  host (when (and inside
+                                  (> (get sizes inside 0) (count run))
                                   (not (contains? ours (:source (first run)))))
-                         above)]
+                         inside)]
               (recur (inc i)
                      (if host id (inc id))
                      (into out (map #(assoc % :island (or host id)) run))))))))))
@@ -185,10 +201,13 @@
   what the *next* version is allowed to put inside it, so neither step can wait for
   the end."
   [ours [oldest & later]]
-  (let [step (fn [lines {:keys [source]}]
-               (coalesce ours (settle ours (deorphan source lines))))]
-    (reduce (fn [lines version] (step (core/attribute lines version) version))
-            (step (core/attribute oldest) oldest)
+  (let [step (fn [before lines {:keys [source]}]
+               (coalesce ours
+                         (settle ours
+                                 (frequencies (keep :island before))
+                                 (deorphan source lines))))]
+    (reduce (fn [lines version] (step lines (core/attribute lines version) version))
+            (step [] (core/attribute oldest) oldest)
             later)))
 
 (defn- caution-of

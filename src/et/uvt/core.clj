@@ -62,8 +62,18 @@
   A surviving line comes back as **the very map it already was**, untouched. That is
   what carries anything a caller has hung on it — an island, a weight — across the
   fold without this namespace having to know the key exists. A new line comes back
-  as `{:text :source}` and nothing else, which is also how a caller tells that it is
-  new.
+  as `{:text :source}`, which is also how a caller tells that it is new, plus
+  `:displaced` when the change that brought it also took lines away in the same
+  place.
+
+  **`:displaced` is what a replacement leaves behind.** Deleted lines are gone from
+  the result, and with them every trace of where they had belonged — so a run that
+  replaced somebody's paragraph looks exactly like a run that appeared out of
+  nowhere between two other things. It is not the same, and the difference decides
+  whether the change landed *inside* a stretch or beside it. So each new line
+  carries whatever this namespace's own `:island` key held on the lines removed
+  around it, and a caller that hangs no islands on anything simply never sees the
+  key.
 
   One argument is the degenerate case: a lone version, its source spread over its own
   lines, which is where a fold over a history starts."
@@ -73,16 +83,29 @@
    (let [a before
          a-text (mapv :text a)
          b (lines after)
-         table (lcs-table a-text b)]
+         table (lcs-table a-text b)
+         ;; One unaligned stretch of the walk, handed over to the result. Its added
+         ;; lines and its deleted lines are the two halves of the same edit, so the
+         ;; islands the deletions belonged to go onto the lines that took their
+         ;; place. Held back until the stretch closes because, walking backwards,
+         ;; the deletions can still be to come.
+         close (fn [acc added displaced]
+                 (let [displaced (disj displaced nil)]
+                   (concat (if (seq displaced)
+                             (map #(assoc % :displaced displaced) added)
+                             added)
+                           acc)))]
      (loop [i (count a)
             j (count b)
-            acc ()]
+            acc ()
+            added ()
+            displaced #{}]
        (cond
          (zero? j)
-         (vec acc)
+         (vec (close acc added (into displaced (map :island) (take i a))))
 
          (and (pos? i) (= (nth a-text (dec i)) (nth b (dec j))))
-         (recur (dec i) (dec j) (conj acc (nth a (dec i))))
+         (recur (dec i) (dec j) (conj (close acc added displaced) (nth a (dec i))) () #{})
 
          ;; Not aligned here, so one side moves. Prefer stepping back through `after`
          ;; — calling this line an addition — unless dropping a line of `before`
@@ -91,7 +114,9 @@
          (and (pos? i)
               (> (nth (nth table (dec i)) j)
                  (nth (nth table i) (dec j))))
-         (recur (dec i) j acc)
+         (recur (dec i) j acc added (conj displaced (:island (nth a (dec i)))))
 
          :else
-         (recur i (dec j) (conj acc {:text (nth b (dec j)) :source after-source})))))))
+         (recur i (dec j) acc
+                (conj added {:text (nth b (dec j)) :source after-source})
+                displaced))))))

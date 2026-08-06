@@ -87,11 +87,26 @@ landing in theirs is a landing, not an assimilation: it stays an island of its o
 at `1`, because nothing you write by hand should be made cheap by what happens to
 surround it. Every other part of the mechanism is blind to whose a line is.
 
+"Inside" is answered by what a change **displaced**, not by what the new lines
+happen to sit between. Most edits are replacements, and a replacement's neighbours
+may be anything at all — rewrite the last paragraph of a section and what follows it
+is whatever came next in the file. A run that turned out a stretch of an island
+landed in that island, whatever it abuts. And it is weighed against the island as it
+*was*, not against the lines left after the deletion, because the deletion and the
+insertion are one edit and counting the remnant charges the island twice.
+
 Islands also **rejoin**. Two of yours separated by a block of theirs become one
 again when that block goes away — they were only ever two because something stood
 between them. That never moves a number on its own, since only unmixed islands of
 the same side merge; it changes what happens next, because absorption weighs itself
 against the island's size.
+
+One heuristic sits on top of the diff: **an isolated match is not a survival, if the
+line recurs.** Replace a block of text and the aligner will happily match the blank
+line in the middle of it, cutting one edit into three. But a line occurring *once* in
+a document and turning up again unchanged really did survive — there is nothing else
+it could have been mistaken for. It is the line occurring forty times whose match
+proves nothing. Nothing in that rule mentions whitespace.
 
 What is still missing is **when**. A line of yours from a year ago counts exactly as
 much as one from this morning, and it shouldn't.
