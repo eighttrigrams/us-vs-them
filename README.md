@@ -10,14 +10,14 @@ human wrote or edited should be considered close to sacred: an agent should
 be hesitant and have a very good reason to touch it. Slop another agent has produced,
 on the other hand, is completely up for grabs.
 
-The main constraint under which this should work is that a next version of a 
+The main constraint under which this should work is that each new version of a
 text is created under identifiable authorship of either a human or an agent.
-As simple text (markdown) is omnipresent, we don't want to build on specifically marked-up text.
+As plain text (markdown) is everywhere, we don't want to build on specially marked-up text.
 
-The output of an evaluation over a given text are ranges of "islands" of lines of human-authored
-text, where human-authored is a gradient insofar as agent edits degrade the sacredness of that 
-given island slightly. Conversely, a human insertion into a streak of agentic text becomes a 
-new island.
+The output of an evaluation over a given text is a set of ranges — "islands" of
+human-authored lines — where human-authored is a gradient insofar as agent edits
+slightly degrade the sacredness of that island. Conversely, a human insertion into
+a stretch of agentic text becomes a new island.
 
 ## The approach: no markup
 
