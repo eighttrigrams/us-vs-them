@@ -85,6 +85,41 @@
                      (if host id (inc id))
                      (into out (map #(assoc % :island (or host id)) run))))))))))
 
+(defn- deorphan
+  "Take back the matches the diff should not have made.
+
+  A line comes back from `core/attribute` still carrying its island when the
+  alignment found it on both sides of the change. Usually that means what it says:
+  the line was left alone. But an alignment works on strings, and some strings recur
+  — a blank line, a lone `}`, an `end`. Replace a whole block of text with a whole
+  block of your own and the diff will happily match the blank line in the middle of
+  it, because a blank line does look exactly like a blank line. Your one edit comes
+  back cut into three, with a line of theirs wedged in the middle holding the pieces
+  apart and dragging them off `1`.
+
+  So: **an isolated match is not a survival.** A line that aligned while both its
+  neighbours changed did not survive the edit, it coincided with it, and it is
+  handed to the change like everything around it.
+
+  Note what this rule does not mention: whitespace, emptiness, length, or any
+  property of the line at all. That is the point. Special-casing blank lines would
+  be a guess about content dressed up as a rule; this is a statement about the
+  alignment, and it catches a stray brace across a rewritten block just as well.
+
+  Only runs of exactly one, which falls out of asking that *both* neighbours be new.
+  Two surviving lines together are already a thin thread of agreement, but they are
+  a thread; one is a coincidence. And never at either end of the text, where a line
+  has only one neighbour and there is nothing to be isolated between."
+  [source lines]
+  (let [new? (fn [i] (and (contains? lines i)
+                          (nil? (:island (nth lines i)))))]
+    (into []
+          (map-indexed (fn [i line]
+                         (if (and (:island line) (new? (dec i)) (new? (inc i)))
+                           {:text (:text line) :source source}
+                           line)))
+          lines)))
+
 (defn- side
   "Which side an island is on — `true` ours, `false` theirs, `nil` if it holds both."
   [ours island]
@@ -132,9 +167,10 @@
   what the *next* version is allowed to put inside it, so neither step can wait for
   the end."
   [ours [oldest & later]]
-  (let [step (fn [lines] (coalesce ours (settle ours lines)))]
-    (reduce (fn [lines version] (step (core/attribute lines version)))
-            (step (core/attribute oldest))
+  (let [step (fn [lines {:keys [source]}]
+               (coalesce ours (settle ours (deorphan source lines))))]
+    (reduce (fn [lines version] (step (core/attribute lines version) version))
+            (step (core/attribute oldest) oldest)
             later)))
 
 (defn- caution-of

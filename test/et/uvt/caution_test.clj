@@ -176,3 +176,38 @@ h3
             {:from 2 :to 3 :caution 0.0}
             {:from 4 :to 6 :caution 0.75}]
            (caution/assess (h/history rejoining-history) {:ours #{:human}})))))
+
+;; The agent writes two paragraphs with a blank line between them. We replace both
+;; paragraphs wholesale — but not the blank line, because we typed a blank line
+;; there too.
+;;
+;; The diff matches it. It is the same string, so an alignment that works on strings
+;; has no grounds to say otherwise, and our replacement comes back cut into three:
+;; ours, a surviving line of theirs, ours. That one line then holds two islands
+;; apart, and drags the section off `1` for no better reason than that an empty line
+;; looks like an empty line.
+;;
+;; The rule that fixes it says nothing about blank lines, which is how you know it
+;; is the right rule. **An isolated match is not a survival.** A line that aligned
+;; while both its neighbours changed did not survive our edit — it coincided with
+;; it. Nothing about that reasoning mentions whitespace; it would catch a stray
+;; `}` or `end` matching across a rewritten block just the same.
+(def coincidence-history "
+# v1 Agent
+a1
+a2
+
+a3
+a4
+# v2 Human
+h1
+h2
+
+h3
+h4
+")
+
+(deftest coincidence-test
+  (testing "a line that aligned while both its neighbours changed did not survive, it coincided"
+    (is (= [{:from 1 :to 5 :caution 1.0}]
+           (caution/assess (h/history coincidence-history) {:ours #{:human}})))))
