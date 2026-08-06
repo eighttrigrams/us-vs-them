@@ -104,6 +104,37 @@ much as one from this morning, and it shouldn't.
 Consumed as a library via `deps.edn`; local consumers point at it with
 `:local/root`.
 
+## Command line
+
+Requires [bbin](https://github.com/babashka/bbin). Runs under babashka, which is why
+nothing in the library reaches for Java.
+
+```sh
+make install
+```
+
+Then, anywhere inside a git repository:
+
+```sh
+us-vs-them --theirs claude@eighttrigrams.net src/et/tr/db/category.clj
+```
+
+```
+1-210        0.24
+211-305      0.00
+```
+
+A git repository is already a history of versions each carrying a provenance
+marker — every revision of the file, in order, with the author of the change that
+made it. Nothing has to be recorded specially and nothing can drift, because git
+recorded it at the time.
+
+**Being human is the default.** You name the machines with `--theirs`, repeatably,
+and everyone else is us. That is the right way round: a committer nobody has
+classified should be treated as a person until someone says otherwise, because the
+failure that costs something is an agent editing your work freely, not an agent
+being needlessly careful with its own.
+
 ## Development
 
 ```sh

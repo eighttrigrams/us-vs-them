@@ -13,14 +13,18 @@
   the whole version arrived under.
 
   This namespace has no test of its own. `caution` is the only caller and its test
-  is the only spec, so nothing lives here that the fold above does not ask for.")
+  is the only spec, so nothing lives here that the fold above does not ask for."
+  (:require [clojure.string :as str]))
 
 (defn- lines
   "The lines of a text, as a vector. Splitting rather than parsing, because a line is
   the unit the caller reasons about — an agent is told 'be careful around 5–17' —
-  and it is the unit a diff aligns on."
+  and it is the unit a diff aligns on.
+
+  A limit of `-1` so a trailing newline yields a trailing empty line rather than
+  being swallowed. Whitespace is text, and a change to it is a change."
   [text]
-  (vec (.split ^String text "\n" -1)))
+  (str/split text #"\n" -1))
 
 (defn- lcs-table
   "The classic longest-common-subsequence length table over two vectors of lines,
