@@ -28,14 +28,17 @@
   (reduce core/attribute (core/attribute oldest) later))
 
 (defn- verdict
-  "How careful to be about one line, from whose hand was last on it.
+  "How careful to be about one line, on a scale from `0` to `1` — `1` sacred, `0` up
+  for grabs.
 
-  Two values, and that is the honest extent of it for now. `:sacred` says the last
-  change to this line was ours, `:up-for-grabs` that it was theirs. Neither yet
-  carries the thing that would make this a spectrum — how much of the line's history
-  is ours rather than just its last moment, and how long ago that moment was."
+  A number rather than a name, because caution is a spectrum and a name has no
+  middle to put anything in. Only the ends are reachable from what the fold gives
+  us: it hands each line one source, the last one to touch it, so the answer can
+  only be *ours* or *theirs* and nothing in between. What lands a line between them
+  is how much of its history is ours rather than just its last moment, and how long
+  ago that moment was — neither of which is folded yet."
   [ours source]
-  (if (contains? ours source) :sacred :up-for-grabs))
+  (if (contains? ours source) 1.0 0.0))
 
 (defn assess
   "Ranges of `history`'s newest text, each with how careful an agent should be in it.

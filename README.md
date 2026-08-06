@@ -52,9 +52,9 @@ text out, each saying how careful an agent should be there.
                  {:text "alpha\nbeta\ngamma"        :source :agent}
                  {:text "alpha\nbeta\ngamma\ndelta" :source :human}]
                 {:ours #{:human}})
-;=> [{:from 1 :to 2 :caution :sacred}
-;    {:from 3 :to 3 :caution :up-for-grabs}
-;    {:from 4 :to 4 :caution :sacred}]
+;=> [{:from 1 :to 2 :caution 1.0}
+;    {:from 3 :to 3 :caution 0.0}
+;    {:from 4 :to 4 :caution 1.0}]
 ```
 
 **`et.uvt.core`** is the intermediate result underneath it — one pair of versions in,
@@ -79,11 +79,12 @@ its markers `"ui"` and `"machine"`.)
 
 ## Where it is going
 
-The verdicts are two, and that is the honest extent of it: `:sacred` means the last
-hand on this line was ours, `:up-for-grabs` that it was theirs. The spectrum needs
-two things neither layer has yet — *how much* of a line's history is ours rather
-than just its last moment, and *how long ago* that was. Both want a version to carry
-a timestamp, and the answer to carry a weight rather than a label.
+`:caution` is a number from `0` to `1` — `1` sacred, `0` up for grabs — because
+caution is a spectrum and a label has no middle to put anything in. Only the ends
+are reachable yet: the fold hands each line the last source to touch it, so today
+the answer is only ever *ours* or *theirs*. What puts a line between them is *how
+much* of its history is ours rather than just its last moment, and *how long ago*
+that moment was.
 
 - Accumulate through the fold instead of overwriting, so fifteen agentic changes
   landing on a human's lines register as fifteen.

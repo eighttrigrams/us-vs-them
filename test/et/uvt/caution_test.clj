@@ -9,19 +9,21 @@
   pair can only ever see one change back; the answer to *how careful* has to see all
   the way down.
 
-  The verdicts are two because only two are reachable yet. `:sacred` here means no
-  more than *the last hand on this line was ours*, and `:up-for-grabs` that it was
-  theirs. The middle of the spectrum — a line of mixed heritage, a human edit old
-  enough to have stopped mattering — needs accumulation and recency, and there is
-  nothing here to produce it yet."
+  The verdict is a number on a scale, `1` sacred and `0` up for grabs, because
+  caution is a spectrum and a label cannot hold a middle. Only the two ends are
+  reachable yet: the fold still overwrites a line's source rather than accumulating
+  into it, so `1` here means no more than *the last hand on this line was ours* and
+  `0` that it was theirs. What puts a line between them — mixed heritage, a human
+  edit old enough to have stopped mattering — comes next, and it arrives as values
+  this shape can already carry."
   (:require [clojure.test :refer [deftest testing is]]
             [et.uvt.caution :as caution]))
 
 (deftest assess-test
   (testing "a history replayed to the end, in ranges, with the agent's own work marked out"
-    (is (= [{:from 1 :to 2 :caution :sacred}
-            {:from 3 :to 3 :caution :up-for-grabs}
-            {:from 4 :to 4 :caution :sacred}]
+    (is (= [{:from 1 :to 2 :caution 1.0}
+            {:from 3 :to 3 :caution 0.0}
+            {:from 4 :to 4 :caution 1.0}]
            (caution/assess [{:text "alpha\nbeta"                    :source :human}
                             {:text "alpha\nbeta\ngamma"             :source :agent}
                             {:text "alpha\nbeta\ngamma\ndelta"      :source :human}]
