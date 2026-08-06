@@ -35,6 +35,20 @@
   [lines]
   (inc (reduce max -1 (keep :island lines))))
 
+(defn- strands
+  "How much of `island` the run at `i` would leave on its smaller side, or `nil` if
+  the run is not between two pieces of it at all.
+
+  Counted over the island's own lines rather than the text between them, because an
+  island is not contiguous: another island's block may sit in the middle of one and
+  neither piece is thereby smaller."
+  [runs i island]
+  (let [of-island (fn [rs] (count (filter #(= island (:island %)) (mapcat identity rs))))
+        above (of-island (subvec runs 0 i))
+        below (of-island (subvec runs (inc i)))]
+    (when (and (pos? above) (pos? below))
+      (min above below))))
+
 (defn- settle
   "Put every line that has just arrived into an island.
 
@@ -42,8 +56,8 @@
   into being; a line that kept its island survived. New lines come in contiguous
   runs, one run per place the change touched, and each run goes one of two ways.
 
-  **It joins the island around it** when it is theirs, landed inside one, and that
-  island outweighs it. Then the island holds its identity and merely gets diluted,
+  **It joins the island around it** when it is theirs, landed inside one, and is
+  outweighed there. Then the island holds its identity and merely gets diluted,
   which is the whole reason islands are here.
 
   *Inside* is answered two ways, and the second matters more than the first. The
@@ -60,6 +74,21 @@
   counting the remnant charges the island twice for it — six lines replacing six of
   thirteen would be read as an even match against the seven survivors, when it is
   plainly a dilution of a thirteen-line island.
+
+  **And outweighed by the piece it would strand, not only by the whole.** Weighing
+  against the aggregate alone is what makes a long-lived file converge: no single
+  edit ever beats the island, so everything is absorbed, and after a hundred
+  versions one island covers the file at some middling number — a true statement
+  about the file and a useless one about any part of it.
+
+  What was never pinned down is *which* island does the outweighing. Not the
+  aggregate: what is at stake when something lands in the middle is the smaller of
+  the two pieces it would cut the island into. A line dropped in the middle of your
+  paragraph cannot be edited without touching your work, so you keep hold of it. A
+  block bigger than the land it separates is not a stain on anything — it has its
+  own beginning and its own end, and it can be rewritten whole without disturbing a
+  line of yours. So the island parts around it and it becomes water. A run at the
+  end of an island strands nothing and cuts nothing, and this says nothing about it.
 
   **Otherwise it becomes an island of its own.** That covers a run at either end of
   the text, a run between two different islands that displaced nothing, a run so
@@ -93,8 +122,10 @@
                   inside (cond
                            (and above (= above below)) above
                            (= 1 (count displaced)) (first displaced))
+                  stranded (when inside (strands runs i inside))
                   host (when (and inside
                                   (> (get sizes inside 0) (count run))
+                                  (or (nil? stranded) (<= (count run) stranded))
                                   (not (contains? ours (:source (first run)))))
                          inside)]
               (recur (inc i)

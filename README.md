@@ -124,6 +124,22 @@ line freest to edit exactly where it is most entangled with your work. An island
 only breaks when what lands in it outweighs it, which is the difference between one
 inserted line and thirty.
 
+**Outweighs which island, though.** Weighed against the whole, nothing ever wins:
+no single edit beats a long file, so everything is absorbed and after a hundred
+versions one island covers the text at some middling number — true about the file,
+useless about any part of it. What is actually at stake when something lands in the
+middle is the smaller of the two pieces it would cut the island into. A block bigger
+than the land it separates is not a stain on anything: it has its own beginning and
+its own end and can be rewritten whole without disturbing a line of yours, so the
+island parts around it and it becomes water. A run at the end of an island strands
+nothing and cuts nothing.
+
+A slow drip stays a drip, deliberately. Single lines arriving one per version are
+each outweighed by whatever piece they land in, forever, so an island can walk a
+long way down without ever coming apart — and that is what an island is for.
+Dilution is the answer to being edited a little at a time; parting is the answer to
+having a section put through you.
+
 **Absorption runs one way only**, and that is where the two sides are told apart.
 Their line landing in your island is contamination and gets held close. Your line
 landing in theirs is a landing, not an assimilation: it stays an island of its own
