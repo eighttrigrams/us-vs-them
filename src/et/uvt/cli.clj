@@ -12,8 +12,9 @@
   that costs something is an agent editing your work freely, not an agent being
   needlessly careful with its own.
 
-  There is no logic in here worth a test — the arithmetic all lives in `caution`,
-  and this only fetches the versions and prints the answer.
+  None of the arithmetic lives here; that is all `caution`'s. What is left is two
+  decisions that turned out to be worth a test each — who counts as us, and where a
+  file's history actually begins.
 
   Runs under babashka, which is why nothing in the library reaches for Java."
   (:require [clojure.java.shell :as shell]
@@ -30,6 +31,40 @@
       (System/exit 1))
     out))
 
+;; Put in front of each commit so the commit lines can be told from the file names
+;; interleaved between them. A control character because nothing else will do: a
+;; path may contain a tab, and it may contain a newline.
+(def ^:private rs "\u0001")
+
+(defn revisions
+  "Parse `git log --follow --name-only` into revisions, oldest first — a sha, the
+  email of whoever committed it, and **the path the file had at that commit**.
+
+  A file's history does not begin where its name does. `git log -- <path>` stops at
+  the rename, so everything written under the old name is lost and the rename reads
+  as the moment the whole file came into being — rename someone's file and every
+  line in it becomes yours, which is the exact failure this library exists to
+  prevent. `--follow` is git's answer.
+
+  It brings the path along with it. The file did not have today's name back then, so
+  each revision has to carry the name it had or there is nothing for `git show` to
+  fetch; `--name-only` is what says so, per commit.
+
+  And the order is reversed here rather than by `--reverse`, because asking git for
+  both quietly gives up on following the rename and returns the single commit — a
+  truncation indistinguishable from a file with no history."
+  [log]
+  (->> (str/split log (re-pattern rs))
+       (remove str/blank?)
+       (map (fn [block]
+              (let [[header & files] (str/split-lines block)
+                    [sha email] (str/split header #"\t")]
+                {:sha sha
+                 :source email
+                 :path (first (remove str/blank? files))})))
+       reverse
+       vec))
+
 (defn- versions
   "Every revision of `path`, oldest first, each marked with the email of whoever
   committed it.
@@ -37,12 +72,11 @@
   The trailing newline goes, because git keeps one and it would otherwise show up as
   an empty last line in every version and put every line number one out."
   [path]
-  (->> (str/split-lines (git "log" "--reverse" "--format=%H%x09%ae" "--" path))
-       (remove str/blank?)
-       (mapv (fn [line]
-               (let [[sha email] (str/split line #"\t")]
-                 {:text (str/replace (git "show" (str sha ":" path)) #"\n\z" "")
-                  :source email})))))
+  (mapv (fn [{:keys [sha source] then :path}]
+          {:text (str/replace (git "show" (str sha ":" then)) #"\n\z" "")
+           :source source})
+        (revisions (git "log" "--follow" (str "--format=" rs "%H%x09%ae")
+                        "--name-only" "--" path))))
 
 (defn audience
   "Which of a file's committers count as us.
