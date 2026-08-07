@@ -1,16 +1,28 @@
 (ns et.uvt.caution-test
-  "The seed tests for the layer we actually want to think from: not *whose is this
-  line* but *how careful should an agent be here*, over a whole text.
-
-  Each history is written out flat above its test — `# v1 Agent` and then that
-  version's lines — because what a test here turns on is which line moved between
-  two versions, and that is visible when the versions stack up and invisible in a
-  vector of escaped strings. The blocks have to sit flush left, so they live in
-  their own `def` rather than halfway down an indented form. See
-  `et.uvt.test-helpers`."
   (:require [clojure.test :refer [deftest testing is]]
             [et.uvt.caution :as caution]
             [et.uvt.test-helpers :as h]))
+
+;; The most basic use case.
+;; A human inserts a line of text into an agentic text.
+;; This immediately becomes an island which has to
+;; be treated as sacred by agents. 
+(def base-case-history "
+# v1 Agent
+a1
+a2
+# v2 Human
+a1
+h1
+a2
+")
+
+(deftest base-case
+  (testing "a history replayed to the end, in ranges, with the agent's own work marked out"
+    (is (= [{:from 1 :to 1 :caution 0.0}
+            {:from 2 :to 2 :caution 1.0}
+            {:from 3 :to 3 :caution 0.0}]
+           (caution/assess (h/history base-case-history) {:ours #{:human}})))))
 
 ;; Three versions and not two, which is the point. Attributing only the last pair
 ;; would see a text whose previous version was written by the agent, and would hand
