@@ -19,17 +19,17 @@
 ;; one change back; the answer to *how careful* has to see all the way down.
 (def replayed-history "
 # v1 Human
-alpha
-beta
+h1
+h2
 # v2 Agent
-alpha
-beta
-gamma
+h1
+h2
+a1
 # v3 Human
-alpha
-beta
-gamma
-delta
+h1
+h2
+a1
+h3
 ")
 
 (deftest assess-test
