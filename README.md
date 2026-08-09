@@ -31,10 +31,8 @@ The only thing to leverage then, is that each new version of a text is created
 under identifable authorship - of either a human or an agent.
 
 The output of an evaluation over a given text is a set of ranges — "islands" of
-human-authored lines inside a "sea" of machine generated text.
-
-Technically based on simple diffing, this is the guiding metaphor 
-for development of the algorithm. We don't want to track authorship
+human-authored lines inside a "sea" of machine generated text. Technically based on simple diffing, 
+this is the guiding metaphor for development of the algorithm. We don't want to track authorship
 of individual lines only, but of meaningfully coherent pieces of text.
 So joining, splitting apart, and dilution of authorship are behaviours
 to be factored in, also in such a manner that we don't 
