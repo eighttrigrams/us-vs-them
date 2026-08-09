@@ -1,4 +1,4 @@
-# us-vs-them
+# Us vs. Them
 
 Line-level provenance for text under agentic editing — **who wrote this line, us or
 them?** — derived from a text's version history.
