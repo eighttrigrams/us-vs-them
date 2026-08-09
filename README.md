@@ -69,9 +69,9 @@ made it.
 Name whichever side is the shorter list. The two flags are repeatable, and they are
 not mirror images of each other — they read differently on purpose.
 
-`--theirs` is a **blacklist**: these are machines, everyone else is considered human.
+`--theirs`: these are agents, everyone else is considered human
 
-`--ours` is a **guest list**: these are the humans, and saying it means saying it.
+`--ours`: these are the humans, everonee else is considered an agent
 
 Passing both arguments at the same time will be rejected.
 
