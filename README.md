@@ -1,7 +1,7 @@
 # Us vs. Them
 
 Line-level provenance for text under agentic editing — **who wrote this line, us or
-them?** — derived from a text's version history.
+them?** — derived from a text's version history. Use it as library or as CLI tool.
 
 ![alt](./title_image.png)
 
@@ -42,9 +42,7 @@ converge in full sea or full island.
 
 ## Usage
 
-The tool is meant to be used as a library as well as from the command line.
-
-The latter requires [bbin](https://github.com/babashka/bbin) for a local install.
+Using us-vs-them as CLI tool requires [bbin](https://github.com/babashka/bbin) for a local install.
 
 ```sh
 make install
