@@ -3,6 +3,8 @@
 Line-level provenance for text under agentic editing — **who wrote this line, us or
 them?** — derived from a texts version history.
 
+![alt](./title_image.png)
+
 ## The problem
 
 With agentic coding and editing, provenance becomes a pertinent question. Text a
