@@ -12,31 +12,33 @@ human wrote or edited should be considered close to sacred: an agent should
 be hesitant and have a very good reason to touch it. Slop another agent has produced,
 on the other hand, is completely up for grabs.
 
-The main constraint under which this should work is that each new version of a
-text is created under identifiable authorship of either a human or an agent.
-As plain text (markdown) is everywhere, we don't want to build on specially marked-up text.
+A use case for this: Take a mostly vibecoded in which you want to establish
+some corners in the code where you want to assert your ideas and ownership.
+You surely don't want another agent bulldoze over *this* piece of code 
+in the next session. 
+
+Another use case: the README.md, originally generated, where you rewrite 
+the opening paragraphs. The agent should feel free to redo or append parts 
+further downwars but should really think twice changing anything in the opener.
+
+## How it works
+
+The main constraint under which this should work is that this should not require
+for text to be marked up specifically for that. Omnipresent plain text (markdown)
+should be supported as is.
+
+The only thing to leverage then, is that each new version of a text is created
+under identifable authorship - of either a human or an agent.
 
 The output of an evaluation over a given text is a set of ranges — "islands" of
-human-authored lines — where human-authored is a gradient insofar as agent edits
-slightly degrade the sacredness of that island. Conversely, a human insertion into
-a stretch of agentic text becomes a new island.
+human-authored lines inside a "sea" of machine generated text.
 
-## The approach: no markup
-
-The thing we deliberately do **not** do is annotate the text. No provenance comments,
-no sidecar of per-line markers to keep in sync, nothing in the file that is not the
-file. Text stays text.
-
-What we build on instead is a single assumption: **for any one change to a text, we
-can tell whether it came from a human or from an agent.** That is a fact the
-surrounding system already has — a git author, a commit signature, a `source` column
-on a version row. It costs nothing to record and it cannot drift, because it is
-recorded at the moment the change is made.
-
-Everything else is then diffing. Replay the versions, attribute each line of each new
-version to whoever's change it survived or arrived in, and accumulate that into a
-per-line heritage. The caution heuristic reads off the accumulation: how much of this
-line is human, how much agentic, and how long ago.
+Technically based on simple diffing, this is the guiding metaphor 
+for development of the algorithm. We don't want to track authorship
+of individual lines only, but of meaningfully coherent pieces of text.
+So joining, splitting apart, and dilution of authorship are behaviours
+to be factored in, also in such a manner that we don't 
+converge in full sea or full island.
 
 ## Usage
 
