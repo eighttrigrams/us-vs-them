@@ -1,7 +1,7 @@
 # us-vs-them
 
 Line-level provenance for text under agentic editing — **who wrote this line, us or
-them?** — derived from a texts version history.
+them?** — derived from a text's version history.
 
 ![alt](./title_image.png)
 
