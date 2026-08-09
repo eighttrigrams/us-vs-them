@@ -19,7 +19,7 @@ in the next session.
 
 Another use case: the README.md, originally generated, where you rewrite 
 the opening paragraphs. The agent should feel free to redo or append parts 
-further downwars but should really think twice changing anything in the opener.
+further downwards but should really think twice changing anything in the opener.
 
 ## How it works
 
