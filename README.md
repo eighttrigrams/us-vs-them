@@ -48,11 +48,17 @@ Using us-vs-them as CLI tool requires [bbin](https://github.com/babashka/bbin) f
 make install
 ```
 
-Then, anywhere inside a git repository:
+A git repository is already a history of versions each carrying a provenance
+marker — every revision of the file, in order, with the author of the change that
+made it.
+
+To use it anywhere inside a git repository:
 
 ```sh
 us-vs-them --ours dan@eighttrigrams.net README.md
 ```
+
+This yields a listing like
 
 ```
 1-3          0.00
@@ -62,17 +68,17 @@ us-vs-them --ours dan@eighttrigrams.net README.md
 21-164       0.00
 ```
 
-A git repository is already a history of versions each carrying a provenance
-marker — every revision of the file, in order, with the author of the change that
-made it.
+where 1.0 means fully human authored range.  
+0.46 means originally human authored range, modified by agents to a certain degree.  
+0.00 means fully agent authored.
 
-Name whichever side is the shorter list. The two flags are repeatable, and they are
-not mirror images of each other — they read differently on purpose.
+Parameters are:
 
 `--ours`: these are the humans, everonee else is considered an agent
 
 `--theirs`: these are agents, everyone else is considered human
 
+Name whichever side is the shorter list.  
 Passing both arguments at the same time will be rejected.
 
 ## Development
