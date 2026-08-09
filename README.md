@@ -69,9 +69,9 @@ made it.
 Name whichever side is the shorter list. The two flags are repeatable, and they are
 not mirror images of each other — they read differently on purpose.
 
-`--theirs`: these are agents, everyone else is considered human
-
 `--ours`: these are the humans, everonee else is considered an agent
+
+`--theirs`: these are agents, everyone else is considered human
 
 Passing both arguments at the same time will be rejected.
 
