@@ -12,7 +12,7 @@ human wrote or edited should be considered close to sacred: an agent should
 be hesitant and have a very good reason to touch it. Slop another agent has produced,
 on the other hand, is completely up for grabs.
 
-A use case for this: Take a mostly vibecoded in which you want to establish
+A use case for this: Take a mostly vibecoded app in which you want to establish
 some corners in the code where you want to assert your ideas and ownership.
 You surely don't want another agent bulldoze over *this* piece of code 
 in the next session. 
