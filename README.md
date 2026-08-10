@@ -72,7 +72,7 @@ where 1.0 means fully human authored range.
 
 Parameters are:
 
-`--ours`: these are the humans, everonee else is considered an agent
+`--ours`: these are the humans, everone else is considered an agent
 
 `--theirs`: these are agents, everyone else is considered human
 
