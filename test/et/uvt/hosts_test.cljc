@@ -85,3 +85,44 @@
          (caution/assess [{:text "his line" :source :human}
                           {:text "his line\ntheir line" :source :agent}]
                          ours))))
+
+(deftest a-history-with-no-text-in-it-parts-the-hosts
+  ;; The second divergence, and unlike the first it is not about arithmetic. It
+  ;; is what `core/lines` does when it is handed something that is not a string:
+  ;; `(str/split nil #"\n" -1)` throws on the JVM, and in ClojureScript `split`
+  ;; coerces with `(str s)` first, so `nil` becomes `""` and comes back as a
+  ;; single empty line.
+  ;;
+  ;; Two shapes reach it. An **empty history** — `heritage` destructures
+  ;; `[oldest & later]`, so `oldest` is `nil` and `attribute` reads `:text` off
+  ;; nothing. And a version whose `:text` is `nil`, which is the same thing one
+  ;; level in.
+  ;;
+  ;; **Pinned, not fixed, and pinned here rather than guarded there.** The library
+  ;; is the owner's and its JVM behaviour is what cookbook's server has been
+  ;; running; a throw on a malformed history is a defensible contract — it is the
+  ;; caller who has no versions, and `assess` has nothing to say about a text that
+  ;; does not exist. What is *not* defensible is the ClojureScript answer, which
+  ;; is not a refusal but an invention: one range over a line nobody wrote,
+  ;; attributed to a source of `nil`, which `:ours` does not contain — so it reads
+  ;; `0.00`, *written by an agent*, about nothing at all. That is the one direction
+  ;; this library exists to get right, arrived at by accident.
+  ;;
+  ;; So the guard is at the caller. `et.cb.caution/ranges` in cookbook refuses an
+  ;; empty ladder and coalesces a nil description, on both hosts, before either
+  ;; shape can get here — and this test is what tells the next person why that
+  ;; guard is not belt-and-braces.
+  (testing "an empty history: a refusal on the JVM, a fabricated range in the browser"
+    #?(:clj  (is (thrown? NullPointerException (caution/assess [] ours)))
+       :cljs (is (= [{:from 1 :to 1 :caution 0.0}] (caution/assess [] ours)))))
+  (testing "and a version whose text is nil, the same thing one level in"
+    #?(:clj  (is (thrown? NullPointerException
+                          (caution/assess [{:text nil :source :human}] ours)))
+       :cljs (is (= [{:from 1 :to 1 :caution 1.0}]
+                    (caution/assess [{:text nil :source :human}] ours)))))
+  (testing "while the empty *string* is a line on both, which is what the guard leans on"
+    ;; `ranges`' `(or description "")` is only a guard if this is a legal input,
+    ;; and `an-island-of-both-sides-is-a-fraction`'s neighbour above already says
+    ;; it is. Repeated here because it is the escape hatch this test recommends.
+    (is (= [{:from 1 :to 1 :caution 1.0}]
+           (caution/assess [{:text "" :source :human}] ours)))))

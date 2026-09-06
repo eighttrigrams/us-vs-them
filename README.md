@@ -90,9 +90,12 @@ make test-cljs   # the same suite on node, from the cookbook checkout beside thi
 bundle — its Recipes are encrypted, so its server cannot read the history the
 split is drawn from and the client has to — and a library whose suite only ever
 runs on one of two hosts is one that will drift on the other. There is no npm
-here on purpose, so `make test-cljs` points at the consumer that has one; see
-the Makefile, and `hosts_test.cljc` for the one place the two hosts spell a
-number differently.
+here on purpose, so `make test-cljs` points at the consumer that has one. That
+runs cookbook's whole node suite, most of which is cookbook's rather than this
+library's, so it can go red for a reason that is not yours — read the namespace
+in the failure. See the Makefile, and `hosts_test.cljc` for the two places the
+hosts do not agree: one number spelled differently, and one degenerate input
+refused on one host and invented over on the other.
 
 ## Behaviour
 

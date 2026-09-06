@@ -25,6 +25,14 @@ endif
 # source paths, so its `make test-cljs` runs the suite above on node — every
 # assertion, unchanged, plus `hosts_test`, which is about the two hosts and
 # exists because of this.
+#
+# Know what you are running: it is cookbook's *whole* node suite, and most of it
+# is cookbook's. Twelve of the fifty-odd tests are this repo's; the rest are the
+# encryption envelope's. So an edit over there can turn this target red for a
+# reason that has nothing to do with this library, and the failure will name a
+# namespace you have never heard of. There is no narrow form — shadow-cljs has
+# one `:ns-regexp` per build and it is that build's, not this call's. Read the
+# namespace in the failure before believing it is yours.
 UVT_CLJS_HOST ?= ../cookbook
 
 test-cljs:
