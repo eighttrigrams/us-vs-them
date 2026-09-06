@@ -1,4 +1,4 @@
-.PHONY: test dist install uninstall
+.PHONY: test test-cljs dist install uninstall
 
 # Where `dist` writes. Override it to build the script somewhere else —
 # `make dist DIST=/tmp/us-vs-them` — which is what a deployment of your own
@@ -11,6 +11,24 @@ ifdef NS
 else
 	clojure -M:test
 endif
+
+# The other host. `caution` and `core` are .cljc so that a ClojureScript consumer
+# can compile them — cookbook computes the provenance split in the browser now,
+# because its Recipes are encrypted and its server cannot read them — and a
+# library that only ever runs its suite on one of two hosts is a library that
+# will drift on the other.
+#
+# There is deliberately no npm and no shadow-cljs in this repo: it is a library,
+# and a second toolchain here would be a second thing to keep in step with the
+# one that actually ships the code. So this points at the consumer that has one.
+# `cookbook/shadow-cljs.edn` carries this checkout's `src` *and* `test` on its
+# source paths, so its `make test-cljs` runs the suite above on node — every
+# assertion, unchanged, plus `hosts_test`, which is about the two hosts and
+# exists because of this.
+UVT_CLJS_HOST ?= ../cookbook
+
+test-cljs:
+	$(MAKE) -C $(UVT_CLJS_HOST) test-cljs
 
 # The whole tool as one self-contained babashka script: every namespace inlined,
 # a shebang on top, nothing left pointing back at this checkout. That is what

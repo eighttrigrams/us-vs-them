@@ -83,9 +83,18 @@ Passing both arguments at the same time will be rejected.
 
 ```sh
 make test
+make test-cljs   # the same suite on node, from the cookbook checkout beside this one
 ```
+
+`caution` and `core` are `.cljc`. Cookbook compiles them into its browser
+bundle — its Recipes are encrypted, so its server cannot read the history the
+split is drawn from and the client has to — and a library whose suite only ever
+runs on one of two hosts is one that will drift on the other. There is no npm
+here on purpose, so `make test-cljs` points at the consumer that has one; see
+the Makefile, and `hosts_test.cljc` for the one place the two hosts spell a
+number differently.
 
 ## Behaviour
 
 The best way to understand the behaviour is to have a look at
-[caution_test.clj](test/et/uvt/caution_test.clj).
+[caution_test.cljc](test/et/uvt/caution_test.cljc).
