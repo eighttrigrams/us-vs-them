@@ -1,5 +1,6 @@
 (ns et.uvt.caution-test
-  (:require [clojure.test :refer [deftest testing is]]
+  (:require #?(:clj  [clojure.test :refer [deftest testing is]]
+               :cljs [cljs.test :refer-macros [deftest testing is]])
             [et.uvt.caution :as caution]
             [et.uvt.test-helpers :as h]))
 
